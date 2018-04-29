@@ -8,22 +8,13 @@
 */
 
 /*
-	NOTE1: You might notice that I don't just clear the screen
-		   and redraw the player. This is because, clearing the
-		   screen to black is REALLY slow and causes the other
-		   actors to look weird. Instead, when the player or 
-		   AI move a single unit, I draw a black horizontal
-		   line over top to cover them up. For the ball, I 
-		   draw a black version over top, and then draw the
-		   new ball.
-		   
-	NOTE2: When reading through the collision code, you can see
-		   that the player's paddle collider is actually
-		   bit bigger than the AIs. This is because users tend
-		   to 'think' they made contact with the ball, when in
-		   reality they didn't. To keep them from getting all
-		   pissy we just make their paddle bigger without them
-		   knowing.
+	NOTE: When reading through the collision code, you can see
+		  that the player's paddle collider is actually
+		  bit bigger than the AIs. This is because users tend
+		  to 'think' they made contact with the ball, when in
+		  reality they didn't. To keep them from getting all
+		  pissy we just make their paddle bigger without them
+		  knowing.
  */
 
 /* Keep these headers */
@@ -91,6 +82,9 @@ void draw_score();
 
 void main(void) 
 {
+	// Countdown timer
+	uint8_t countdown;
+
 	// Generate random seed
 	srandom((uint32_t)rtc_Time());
 
@@ -109,25 +103,51 @@ void main(void)
 	ball_x_vel = ((float)(random() % 2) - 0.5f) * 3.0f;
 	ball_y_vel = (((float)(random() % 32) / 32.0f) - 0.5f) * 3.0f;
 	
+	// Player score
+	gfx_ZeroScreen();
+	gfx_PrintStringXY("Press ENTER to begin.", (LCD_WIDTH / 2) - 76, (LCD_HEIGHT / 2) + 8);
+	gfx_PrintStringXY("Press CLEAR to quit.", (LCD_WIDTH / 2) - 72, (LCD_HEIGHT / 2) - 8);
+	gfx_SwapDraw();
+	
+	// Wait for user to press enter
 	while(1)
 	{
-	    // Update kb_Data
         kb_Scan();
-	
-		// Quit game
 		if(kb_Data[6] & kb_Clear) break;
-	
-		// Clear screen
-		gfx_ZeroScreen();
+		if(!(kb_Data[6] & kb_Enter)) continue;
 		
-		// Game updates
-		move_player();
-		move_ball();
-		move_ai();
-		draw_score();
+		// Countdown
+		for(countdown = 3; countdown <= 3; --countdown)
+		{
+			gfx_ZeroScreen();
+			gfx_SetTextXY(LCD_WIDTH / 2, LCD_HEIGHT / 2);
+			gfx_PrintUInt(countdown, 1);
+			gfx_SwapDraw();
+			delay(1000);
+		}
 		
-		// Swap back buffer
-		gfx_SwapDraw();
+		while(1)
+		{
+			// Update kb_Data
+			kb_Scan();
+		
+			// Quit game
+			if(kb_Data[6] & kb_Clear) break;
+		
+			// Clear screen
+			gfx_ZeroScreen();
+			
+			// Game updates
+			move_player();
+			move_ball();
+			move_ai();
+			draw_score();
+			
+			// Swap back buffer
+			gfx_SwapDraw();
+		}
+		
+		break;
 	}
 
     // Usual cleanup 
