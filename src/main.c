@@ -113,7 +113,7 @@ void main(void)
 	while(1)
 	{
         kb_Scan();
-		if(kb_Data[6] & kb_Clear) break;
+		if(kb_Data[6] & kb_Clear) goto skip_game_over;
 		if(!(kb_Data[6] & kb_Enter)) continue;
 		
 		// Countdown
@@ -150,6 +150,21 @@ void main(void)
 		break;
 	}
 
+	// Draw score
+	gfx_ZeroScreen();
+	gfx_PrintStringXY("GAME OVER", (LCD_WIDTH/2)-32, (LCD_HEIGHT/2) - 6);
+	gfx_PrintStringXY("Score : ", (LCD_WIDTH/2)-38, (LCD_HEIGHT/2) + 6);
+	gfx_PrintUInt((unsigned int)player_score, 4);
+	
+	gfx_SwapDraw();
+
+	delay(500);
+	
+	// Wait for a key press
+    while (!os_GetCSC());
+	
+	skip_game_over:
+	
     // Usual cleanup 
     gfx_End();
 }
